@@ -219,8 +219,8 @@ const game$ = Rx.Observable.combineLatest(
     .sample(SPEED);
 
 function renderError(error) {
-throw(error);
    alert("There was an error: " + error);
+   throw(error);
 }
 
 game$.takeWhile(function(actors) {
