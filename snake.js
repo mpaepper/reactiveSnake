@@ -41,7 +41,7 @@ function isOutOfField(obj) {
 
 function gameOver(snake) {
     var head = snake[snake.length - 1];
-    if (isOutOfField(head)) {
+    if (head && isOutOfField(head)) {
         return true;
     }
     if (snake.length < 3) {
@@ -182,11 +182,9 @@ const apples$ = head$.scan(function(apples, snakePos) {
     return apples;
 }, createInitialApples()).distinctUntilChanged(
     function(apples) {
-        let sum = 0;
-        apples.forEach(function(apple) {
-            sum = sum + apple.x + apple.y
-        });
-        return sum;
+        return apples.reduce(function(sum, apple) {
+            return sum += apple.x + apple.y
+        }, 0);
     });
 
 const length$ = apples$.scan(function(prevLength, apple) {
@@ -194,7 +192,7 @@ const length$ = apples$.scan(function(prevLength, apple) {
 }, 1);
 
 const score$ = length$.map(function(length) {
-    return Math.max(0, (length - 2) * 10);
+    return (length - 2) * 10;
 });
 
 const finalSnake$ = head$.withLatestFrom(length$)
@@ -220,12 +218,11 @@ const game$ = Rx.Observable.combineLatest(
         })
     .sample(SPEED);
 
+function renderError(error) {
+throw(error);
+   alert("There was an error: " + error);
+}
 
 game$.takeWhile(function(actors) {
     return gameOver(actors.snake) === false;
-}).subscribe(renderScene);
-
-game$.skipWhile(function(actors) {
-    var result = gameOver(actors.snake) === false;
-    return result;
-}).subscribe(renderGameOver);
+}).subscribe(renderScene, renderError, renderGameOver);
